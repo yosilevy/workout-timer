@@ -1,0 +1,77 @@
+.time-input-container {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.time-input-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #e2e2e2;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.time-input-fields {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.time-input-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.time-input {
+  width: 70px;
+  padding: 0.8rem;
+  border: 2px solid #4a90e2;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.time-select {
+  width: 80px;
+  padding: 0.8rem;
+  border: 2px solid #4a90e2;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 20px;
+  padding-right: 30px;
+}
+
+.time-select:focus {
+  outline: none;
+  border-color: #357abd;
+}
+
+.time-input:focus {
+  outline: none;
+  border-color: #357abd;
+}
+
+.time-input-separator {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #e2e2e2;
+  margin: 0 0.5rem;
+}
+
+.time-input-label {
+  color: #e2e2e2;
+  font-size: 0.9rem;
+} 

@@ -1,0 +1,94 @@
+:root {
+  --workout-bg: #ff3333;
+  --rest-bg: #33cc33;
+  --done-bg: #3366ff;
+  --text-color: #ffffff;
+  --button-bg: rgba(255, 255, 255, 0.2);
+  --button-hover: rgba(255, 255, 255, 0.3);
+}
+
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
+  color: var(--text-color);
+  transition: background-color 0.5s ease;
+}
+
+.timer-status {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.round {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.phase {
+  font-size: 1.8rem;
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+.timer-display {
+  font-size: 12rem;
+  font-weight: bold;
+  font-family: monospace;
+  margin: 2rem 0;
+  color: var(--text-color);
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  line-height: 1;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 1rem;
+  margin-top: auto;
+  margin-bottom: 2rem;
+}
+
+.control-button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(5px);
+}
+
+.control-button:hover {
+  background-color: var(--button-hover);
+  transform: scale(1.05);
+}
+
+.control-button:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 600px) {
+  .timer-display {
+    font-size: 8rem;
+  }
+
+  .round {
+    font-size: 1.5rem;
+  }
+
+  .phase {
+    font-size: 1.3rem;
+  }
+
+  .control-button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+} 
