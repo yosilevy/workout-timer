@@ -1,7 +1,13 @@
 .App {
   text-align: center;
-  min-height: 100vh;
+  height: 100vh;
   color: white;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .App-logo {
@@ -39,100 +45,99 @@
   }
 }
 
-.settings-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.app {
   min-height: 100vh;
-  padding: 20px;
-  background-color: #1a1a1a;
+  background-color: var(--background-color);
+  position: relative;
 }
 
-.settings-form {
-  background-color: #2a2a2a;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   max-width: 400px;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-  text-align: left;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #e2e2e2;
-  font-size: 1.1rem;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.8rem;
-  border: 2px solid #4a90e2;
-  border-radius: 6px;
-  background-color: #1a1a1a;
-  color: white;
-  font-size: 1rem;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #357abd;
-}
-
-.start-button {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.2rem;
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.start-button:hover {
-  background-color: #357abd;
-  transform: scale(1.02);
-}
-
-.settings-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 0.8rem 1.5rem;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 1rem;
-  backdrop-filter: blur(5px);
+  background: white;
+  padding: 20px;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease-out;
 }
 
-.settings-button:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.settings-panel h2 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.settings-group {
+  margin-bottom: 20px;
+}
+
+.settings-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 16px;
+}
+
+.settings-group input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.start-workout-button {
+  width: 100%;
+  padding: 15px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.2s ease;
+}
+
+.start-workout-button:hover {
+  background: #3e8e41;
+}
+
+.close-settings {
+  width: 100%;
+  padding: 15px;
+  background: #007AFF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.2s ease;
+}
+
+.close-settings:hover {
+  background: #0056b3;
 }
 
 @media (max-width: 600px) {
-  .settings-form {
-    padding: 1.5rem;
-  }
-
-  .form-group input {
-    padding: 0.6rem;
-  }
-
-  .start-button {
-    padding: 0.8rem;
+  .settings-panel {
+    max-width: 100%;
   }
 }

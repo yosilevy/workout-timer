@@ -1,26 +1,20 @@
 .time-input-container {
-  margin-bottom: 1.5rem;
-  text-align: left;
-}
-
-.time-input-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #e2e2e2;
-  font-size: 1.1rem;
-  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .time-input-fields {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 10px;
 }
 
 .time-input-field {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
 }
 
 .time-input {
@@ -35,23 +29,13 @@
 }
 
 .time-select {
-  width: 80px;
-  padding: 0.8rem;
-  border: 2px solid #4a90e2;
-  border-radius: 6px;
-  background-color: #1a1a1a;
-  color: white;
-  font-size: 1rem;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: white;
+  min-width: 80px;
   text-align: center;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 20px;
-  padding-right: 30px;
 }
 
 .time-select:focus {
@@ -65,13 +49,14 @@
 }
 
 .time-input-separator {
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: bold;
-  color: #e2e2e2;
-  margin: 0 0.5rem;
+  color: #333;
+  margin-top: 10px;
 }
 
 .time-input-label {
-  color: #e2e2e2;
-  font-size: 0.9rem;
+  margin-top: 5px;
+  font-size: 14px;
+  color: #666;
 } 

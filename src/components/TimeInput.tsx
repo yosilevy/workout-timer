@@ -1,36 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import './TimeInput.css';
 
 interface TimeInputProps {
-  label: string;
-  value: number; // in seconds
-  onChange: (seconds: number) => void;
+  minutes: number;
+  seconds: number;
+  onMinutesChange: (minutes: number) => void;
+  onSecondsChange: (seconds: number) => void;
 }
 
-const TimeInput: React.FC<TimeInputProps> = ({ label, value, onChange }) => {
-  const [minutes, setMinutes] = useState<number>(Math.floor(value / 60));
-  const [seconds, setSeconds] = useState<number>(value % 60);
-
-  useEffect(() => {
-    // Update the parent component when minutes or seconds change
-    const totalSeconds = minutes * 60 + seconds;
-    onChange(totalSeconds);
-  }, [minutes, seconds, onChange]);
-
-  useEffect(() => {
-    // Update local state when the value prop changes
-    setMinutes(Math.floor(value / 60));
-    setSeconds(value % 60);
-  }, [value]);
-
+const TimeInput: React.FC<TimeInputProps> = ({ 
+  minutes, 
+  seconds, 
+  onMinutesChange, 
+  onSecondsChange 
+}) => {
   const handleMinutesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newMinutes = parseInt(e.target.value);
-    setMinutes(newMinutes);
+    onMinutesChange(newMinutes);
   };
 
   const handleSecondsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSeconds = parseInt(e.target.value);
-    setSeconds(newSeconds);
+    onSecondsChange(newSeconds);
   };
 
   // Generate options for minutes (0-10)
@@ -45,7 +36,6 @@ const TimeInput: React.FC<TimeInputProps> = ({ label, value, onChange }) => {
 
   return (
     <div className="time-input-container">
-      <label className="time-input-label">{label}</label>
       <div className="time-input-fields">
         <div className="time-input-field">
           <select
