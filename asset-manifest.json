@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/workout-timer/static/css/main.3096e881.css",
+    "main.js": "/workout-timer/static/js/main.d86d9e08.js",
+    "index.html": "/workout-timer/index.html",
+    "main.3096e881.css.map": "/workout-timer/static/css/main.3096e881.css.map",
+    "main.d86d9e08.js.map": "/workout-timer/static/js/main.d86d9e08.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3096e881.css",
+    "static/js/main.d86d9e08.js"
+  ]
+}
