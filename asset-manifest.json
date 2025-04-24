@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/workout-timer/static/css/main.631930cd.css",
-    "main.js": "/workout-timer/static/js/main.d9f30043.js",
+    "main.js": "/workout-timer/static/js/main.d22c0884.js",
     "index.html": "/workout-timer/index.html",
     "main.631930cd.css.map": "/workout-timer/static/css/main.631930cd.css.map",
-    "main.d9f30043.js.map": "/workout-timer/static/js/main.d9f30043.js.map"
+    "main.d22c0884.js.map": "/workout-timer/static/js/main.d22c0884.js.map"
   },
   "entrypoints": [
     "static/css/main.631930cd.css",
-    "static/js/main.d9f30043.js"
+    "static/js/main.d22c0884.js"
   ]
 }
