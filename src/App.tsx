@@ -4,16 +4,16 @@ import TimeInput from './components/TimeInput';
 import './App.css';
 
 // App version - update this when making significant changes
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.1.1';
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
-  const [rounds, setRounds] = useState(3);
-  const [roundsInput, setRoundsInput] = useState('3'); // New state for input value
-  const [workMinutes, setWorkMinutes] = useState(1);
+  const [rounds, setRounds] = useState(6);
+  const [roundsInput, setRoundsInput] = useState('6'); // New state for input value
+  const [workMinutes, setWorkMinutes] = useState(4);
   const [workSeconds, setWorkSeconds] = useState(0);
   const [restMinutes, setRestMinutes] = useState(0);
-  const [restSeconds, setRestSeconds] = useState(30);
+  const [restSeconds, setRestSeconds] = useState(45);
   const [key, setKey] = useState(0); // Key to force Timer component to reset
 
   const workDuration = workMinutes * 60 + workSeconds;
