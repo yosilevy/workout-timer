@@ -4,7 +4,9 @@ import TimeInput from './components/TimeInput';
 import './App.css';
 
 // App version - update this when making significant changes
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.2.0';
+
+type RoundEndSound = 'off' | 'random' | 'softBeep' | 'alertChime' | 'miniSiren' | 'faultAlarm';
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
@@ -14,6 +16,8 @@ function App() {
   const [workSeconds, setWorkSeconds] = useState(0);
   const [restMinutes, setRestMinutes] = useState(0);
   const [restSeconds, setRestSeconds] = useState(45);
+  const [roundEndSound, setRoundEndSound] = useState<RoundEndSound>('off');
+  const [soundRepeatCount, setSoundRepeatCount] = useState(2);
   const [key, setKey] = useState(0); // Key to force Timer component to reset
 
   const workDuration = workMinutes * 60 + workSeconds;
@@ -58,6 +62,8 @@ function App() {
         rounds={rounds}
         workDuration={workDuration}
         restDuration={restDuration}
+        roundEndSound={roundEndSound}
+        soundRepeatCount={soundRepeatCount}
         onSettingsClick={handleSettingsClick}
       />
       
@@ -91,6 +97,31 @@ function App() {
               onMinutesChange={setRestMinutes}
               onSecondsChange={setRestSeconds}
             />
+          </div>
+          <div className="settings-group">
+            <label>Round End Sound:</label>
+            <select
+              value={roundEndSound}
+              onChange={(e) => setRoundEndSound(e.target.value as RoundEndSound)}
+            >
+              <option value="off">Off</option>
+              <option value="random">Random</option>
+              <option value="softBeep">Soft Beep</option>
+              <option value="alertChime">Alert Chime</option>
+              <option value="miniSiren">Mini Siren</option>
+              <option value="faultAlarm">Fault Alarm</option>
+            </select>
+          </div>
+          <div className="settings-group">
+            <label>Sound Repeats:</label>
+            <select
+              value={soundRepeatCount}
+              onChange={(e) => setSoundRepeatCount(parseInt(e.target.value, 10))}
+            >
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+            </select>
           </div>
           <button className="start-workout-button" onClick={handleStartWorkout}>
             Start Workout
