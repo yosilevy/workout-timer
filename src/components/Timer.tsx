@@ -48,6 +48,9 @@ export const Timer: React.FC<TimerProps> = ({
   const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioElementsRef = useRef<Record<SelectableSound, HTMLAudioElement> | null>(null);
+  const isAudioUnlockedRef = useRef(false);
+  const didWarnAudioBlockedRef = useRef(false);
   const soundPlaybackTokenRef = useRef(0);
 
   const stopRoundEndSound = useCallback(() => {
@@ -74,35 +77,75 @@ export const Timer: React.FC<TimerProps> = ({
     return roundEndSound;
   }, [roundEndSound]);
 
-  const playSound = useCallback(async (url: string, playbackToken: number): Promise<void> => {
-    const audio = new Audio(url);
-    audio.preload = 'auto';
-    // iOS fix: add audio element to DOM for reliable playback
-    audio.style.display = 'none';
-    document.body.appendChild(audio);
+  const ensureAudioElements = useCallback((): Record<SelectableSound, HTMLAudioElement> => {
+    if (audioElementsRef.current) {
+      return audioElementsRef.current;
+    }
+
+    const createdAudioElements = {} as Record<SelectableSound, HTMLAudioElement>;
+    const soundEntries = Object.entries(SOUND_URLS) as Array<[SelectableSound, string]>;
+
+    soundEntries.forEach(([soundKey, soundUrl]) => {
+      const audio = new Audio(soundUrl);
+      audio.preload = 'auto';
+      audio.setAttribute('playsinline', '');
+      audio.load();
+      createdAudioElements[soundKey] = audio;
+    });
+
+    audioElementsRef.current = createdAudioElements;
+    return createdAudioElements;
+  }, []);
+
+  const unlockAudioOnUserGesture = useCallback(async (): Promise<boolean> => {
+    if (isAudioUnlockedRef.current) {
+      return true;
+    }
+
+    const audioElements = ensureAudioElements();
+    const unlockProbeAudio = audioElements.softBeep;
+
+    try {
+      unlockProbeAudio.muted = true;
+      unlockProbeAudio.currentTime = 0;
+      await unlockProbeAudio.play();
+      unlockProbeAudio.pause();
+      unlockProbeAudio.currentTime = 0;
+      unlockProbeAudio.muted = false;
+      isAudioUnlockedRef.current = true;
+      didWarnAudioBlockedRef.current = false;
+      return true;
+    } catch (error) {
+      unlockProbeAudio.muted = false;
+
+      if (!didWarnAudioBlockedRef.current) {
+        console.warn('Audio is blocked until Safari allows playback from user interaction.', error);
+        didWarnAudioBlockedRef.current = true;
+      }
+
+      return false;
+    }
+  }, [ensureAudioElements]);
+
+  const playSound = useCallback(async (sound: SelectableSound, playbackToken: number): Promise<void> => {
+    const audioElements = ensureAudioElements();
+    const audio = audioElements[sound];
 
     if (playbackToken !== soundPlaybackTokenRef.current) {
-      document.body.removeChild(audio);
       return;
     }
 
     activeAudioRef.current = audio;
+    audio.currentTime = 0;
 
     await new Promise<void>((resolve) => {
       const cleanup = () => {
         audio.removeEventListener('ended', onEnded);
         audio.removeEventListener('error', onError);
         audio.removeEventListener('pause', onPause);
-        audio.removeEventListener('canplaythrough', onCanPlayThrough);
 
         if (activeAudioRef.current === audio) {
           activeAudioRef.current = null;
-        }
-
-        try {
-          document.body.removeChild(audio);
-        } catch (e) {
-          // Already removed
         }
       };
 
@@ -121,26 +164,24 @@ export const Timer: React.FC<TimerProps> = ({
         resolve();
       };
 
-      const onCanPlayThrough = () => {
-        audio.removeEventListener('canplaythrough', onCanPlayThrough);
-        audio.play().catch((err) => {
-          console.warn('Audio playback failed:', err);
-          cleanup();
-          resolve();
-        });
-      };
-
       audio.addEventListener('ended', onEnded);
       audio.addEventListener('error', onError);
       audio.addEventListener('pause', onPause);
-      audio.addEventListener('canplaythrough', onCanPlayThrough);
 
-      // Try to play immediately, but on iOS this often requires canplaythrough first
-      audio.play().catch(() => {
-        // Expected on iOS sometimes; canplaythrough handler will try again
-      });
+      const playbackPromise = audio.play();
+      if (playbackPromise !== undefined) {
+        playbackPromise.catch((error: unknown) => {
+          if (!didWarnAudioBlockedRef.current) {
+            console.warn('Audio playback was blocked by the browser.', error);
+            didWarnAudioBlockedRef.current = true;
+          }
+
+          cleanup();
+          resolve();
+        });
+      }
     });
-  }, []);
+  }, [ensureAudioElements]);
 
   const playRoundEndSound = useCallback(async () => {
     const chosenSound = resolveSoundChoice();
@@ -149,7 +190,6 @@ export const Timer: React.FC<TimerProps> = ({
     }
 
     const repeats = Math.min(3, Math.max(1, soundRepeatCount));
-    const soundUrl = SOUND_URLS[chosenSound];
     const playbackToken = soundPlaybackTokenRef.current + 1;
 
     stopRoundEndSound();
@@ -162,7 +202,7 @@ export const Timer: React.FC<TimerProps> = ({
 
       try {
         // Play sequentially to make repeats clear and avoid audio overlap.
-        await playSound(soundUrl, playbackToken);
+        await playSound(chosenSound, playbackToken);
       } catch (error) {
         console.error('Round end sound failed to play:', error);
         break;
@@ -353,6 +393,21 @@ export const Timer: React.FC<TimerProps> = ({
     setTimerId(id);
   }, [playRoundEndSound, rounds, workDuration, restDuration, timerId]);
 
+  const handlePrimaryButtonClick = useCallback(() => {
+    if (timerState.isRunning) {
+      pauseTimer();
+      return;
+    }
+
+    void unlockAudioOnUserGesture();
+    startTimer();
+  }, [pauseTimer, startTimer, timerState.isRunning, unlockAudioOnUserGesture]);
+
+  const handleSkipButtonClick = useCallback(() => {
+    void unlockAudioOnUserGesture();
+    skipPeriod();
+  }, [skipPeriod, unlockAudioOnUserGesture]);
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -363,6 +418,14 @@ export const Timer: React.FC<TimerProps> = ({
   useEffect(() => {
     return () => {
       stopRoundEndSound();
+
+      if (audioElementsRef.current) {
+        Object.values(audioElementsRef.current).forEach((audio) => {
+          audio.pause();
+          audio.src = '';
+        });
+        audioElementsRef.current = null;
+      }
 
       if (timerId) {
         clearInterval(timerId);
@@ -401,12 +464,12 @@ export const Timer: React.FC<TimerProps> = ({
         {!timerState.isDone && (
           <>
             <button 
-              onClick={timerState.isRunning ? pauseTimer : startTimer} 
+              onClick={handlePrimaryButtonClick} 
               className="control-button"
             >
               {timerState.isRunning ? 'Pause' : 'Start'}
             </button>
-            <button onClick={skipPeriod} className="control-button">
+            <button onClick={handleSkipButtonClick} className="control-button">
               Skip
             </button>
           </>
