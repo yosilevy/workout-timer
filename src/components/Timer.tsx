@@ -77,22 +77,32 @@ export const Timer: React.FC<TimerProps> = ({
   const playSound = useCallback(async (url: string, playbackToken: number): Promise<void> => {
     const audio = new Audio(url);
     audio.preload = 'auto';
+    // iOS fix: add audio element to DOM for reliable playback
+    audio.style.display = 'none';
+    document.body.appendChild(audio);
 
     if (playbackToken !== soundPlaybackTokenRef.current) {
+      document.body.removeChild(audio);
       return;
     }
 
     activeAudioRef.current = audio;
-    await audio.play();
 
     await new Promise<void>((resolve) => {
       const cleanup = () => {
         audio.removeEventListener('ended', onEnded);
         audio.removeEventListener('error', onError);
         audio.removeEventListener('pause', onPause);
+        audio.removeEventListener('canplaythrough', onCanPlayThrough);
 
         if (activeAudioRef.current === audio) {
           activeAudioRef.current = null;
+        }
+
+        try {
+          document.body.removeChild(audio);
+        } catch (e) {
+          // Already removed
         }
       };
 
@@ -111,9 +121,24 @@ export const Timer: React.FC<TimerProps> = ({
         resolve();
       };
 
+      const onCanPlayThrough = () => {
+        audio.removeEventListener('canplaythrough', onCanPlayThrough);
+        audio.play().catch((err) => {
+          console.warn('Audio playback failed:', err);
+          cleanup();
+          resolve();
+        });
+      };
+
       audio.addEventListener('ended', onEnded);
       audio.addEventListener('error', onError);
       audio.addEventListener('pause', onPause);
+      audio.addEventListener('canplaythrough', onCanPlayThrough);
+
+      // Try to play immediately, but on iOS this often requires canplaythrough first
+      audio.play().catch(() => {
+        // Expected on iOS sometimes; canplaythrough handler will try again
+      });
     });
   }, []);
 
