@@ -49,7 +49,8 @@ export const Timer: React.FC<TimerProps> = ({
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioElementsRef = useRef<Record<SelectableSound, HTMLAudioElement> | null>(null);
-  const isAudioUnlockedRef = useRef(false);
+  const backgroundAudioRef = useRef<HTMLAudioElement | null>(null);
+  const backgroundAudioIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const didWarnAudioBlockedRef = useRef(false);
   const soundPlaybackTokenRef = useRef(0);
 
@@ -98,10 +99,6 @@ export const Timer: React.FC<TimerProps> = ({
   }, []);
 
   const unlockAudioOnUserGesture = useCallback(async (): Promise<boolean> => {
-    if (isAudioUnlockedRef.current) {
-      return true;
-    }
-
     const audioElements = ensureAudioElements();
     const unlockProbeAudio = audioElements.softBeep;
 
@@ -112,12 +109,31 @@ export const Timer: React.FC<TimerProps> = ({
       unlockProbeAudio.pause();
       unlockProbeAudio.currentTime = 0;
       unlockProbeAudio.muted = false;
-      isAudioUnlockedRef.current = true;
       didWarnAudioBlockedRef.current = false;
+
+      // Start background audio loop to keep audio context unlocked for the duration of the timer
+      if (!backgroundAudioIntervalRef.current) {
+        backgroundAudioRef.current = audioElements.softBeep;
+        backgroundAudioIntervalRef.current = setInterval(() => {
+          // Every 5 seconds, play a tiny bit of audio (muted) to keep iOS audio context warm
+          if (backgroundAudioRef.current && backgroundAudioRef.current.paused) {
+            backgroundAudioRef.current.muted = true;
+            backgroundAudioRef.current.currentTime = 0;
+            backgroundAudioRef.current.play().catch(() => {
+              // ignore errors; this is just to keep context warm
+            });
+            setTimeout(() => {
+              if (backgroundAudioRef.current) {
+                backgroundAudioRef.current.pause();
+                backgroundAudioRef.current.muted = false;
+              }
+            }, 10);
+          }
+        }, 5000);
+      }
+
       return true;
     } catch (error) {
-      unlockProbeAudio.muted = false;
-
       if (!didWarnAudioBlockedRef.current) {
         console.warn('Audio is blocked until Safari allows playback from user interaction.', error);
         didWarnAudioBlockedRef.current = true;
@@ -126,6 +142,18 @@ export const Timer: React.FC<TimerProps> = ({
       return false;
     }
   }, [ensureAudioElements]);
+
+  const stopBackgroundAudioLoop = useCallback((): void => {
+    if (backgroundAudioIntervalRef.current) {
+      clearInterval(backgroundAudioIntervalRef.current);
+      backgroundAudioIntervalRef.current = null;
+    }
+
+    if (backgroundAudioRef.current) {
+      backgroundAudioRef.current.pause();
+      backgroundAudioRef.current = null;
+    }
+  }, []);
 
   const playSound = useCallback(async (sound: SelectableSound, playbackToken: number): Promise<void> => {
     const audioElements = ensureAudioElements();
@@ -292,13 +320,14 @@ export const Timer: React.FC<TimerProps> = ({
 
   const pauseTimer = useCallback(() => {
     stopRoundEndSound();
+    stopBackgroundAudioLoop();
 
     if (timerId) {
       clearInterval(timerId);
       setTimerId(null);
       setTimerState((prev) => ({ ...prev, isRunning: false }));
     }
-  }, [stopRoundEndSound, timerId]);
+  }, [stopRoundEndSound, stopBackgroundAudioLoop, timerId]);
 
   const skipPeriod = useCallback(() => {
     if (timerId) {
@@ -414,10 +443,18 @@ export const Timer: React.FC<TimerProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Stop background audio loop when workout is complete
+  useEffect(() => {
+    if (timerState.isDone) {
+      stopBackgroundAudioLoop();
+    }
+  }, [timerState.isDone, stopBackgroundAudioLoop]);
+
   // Clean up wake lock when component unmounts
   useEffect(() => {
     return () => {
       stopRoundEndSound();
+      stopBackgroundAudioLoop();
 
       if (audioElementsRef.current) {
         Object.values(audioElementsRef.current).forEach((audio) => {
@@ -433,7 +470,7 @@ export const Timer: React.FC<TimerProps> = ({
 
       releaseWakeLock();
     };
-  }, [stopRoundEndSound, timerId]);
+  }, [stopRoundEndSound, stopBackgroundAudioLoop, timerId]);
 
   // Determine background color based on workout/rest/done state
   const backgroundColor = timerState.isDone 
